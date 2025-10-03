@@ -1,6 +1,6 @@
 select distinct generate_uuid() as event_sk,
-       id,
-       name,
+       event_id,
+       event_name,
        description,
        type,
        event_format,
