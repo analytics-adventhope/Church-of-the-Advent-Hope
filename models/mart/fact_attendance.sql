@@ -1,7 +1,7 @@
 {{ config(materialized = 'table') }}
 
-select m.member_sk,
-       e.event_sk,
+select m.contact_id,
+       e.event_id,
        d.date_sk,
        e.event_date,
        e.event_time,
