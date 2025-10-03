@@ -1,0 +1,11 @@
+name: 'advent_hope_analytics'
+version: '1.0'
+config-version: 2
+
+profile: 'BigQuery'  # the connection in dbt Cloud
+
+source-paths: ["models"]
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_modules"
