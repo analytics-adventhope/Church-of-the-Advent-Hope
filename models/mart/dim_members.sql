@@ -15,4 +15,4 @@ select generate_uuid() as member_sk,
        company,
        participant_type,
        opted_out_of_email
-from {{ref('event_detail')}};
+from {{ref('event_detail')}}
