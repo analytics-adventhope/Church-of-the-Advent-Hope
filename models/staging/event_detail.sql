@@ -1,5 +1,5 @@
-select distinct c.Id as id,
-       c.Name as name,
+select distinct c.Id as event_id,
+       c.Name as event_name,
        c.Description as description,
        c.Type as type,
        c.Format__c as event_format,
