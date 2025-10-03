@@ -15,4 +15,4 @@ inner join {{ ref('dim_events') }} e
         on cm.event_id = e.id
 inner join {{ ref('dim_dates') }} d
         on e.event_date = d.date
-where cm.attendance_indicator = true;
+where cm.attendance_indicator = true
