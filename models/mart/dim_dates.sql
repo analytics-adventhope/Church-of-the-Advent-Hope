@@ -8,4 +8,4 @@ select format_date('%Y%m%d', date) as date_sk,
        extract(month from date) as month,
        extract(quarter from date) as quarter,
        extract(year from date) as year
-from days;
+from days
