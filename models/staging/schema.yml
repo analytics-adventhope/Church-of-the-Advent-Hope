@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: raw_attendance        # Source name used in dbt
+    database: analytics-473100  # BigQuery project ID
+    schema: raw_attendance      # BigQuery dataset
+    tables:
+      - name: Campaign
+      - name: CampaignMember
