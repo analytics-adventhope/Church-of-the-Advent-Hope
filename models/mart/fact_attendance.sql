@@ -1,6 +1,6 @@
 {{ config(materialized = 'table') }}
 
-select m.contact_id,
+select distinct m.contact_id,
        e.event_id,
        d.date_sk,
        e.event_date,
