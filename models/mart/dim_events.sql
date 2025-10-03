@@ -9,4 +9,4 @@ select distinct generate_uuid() as event_sk,
        budget,
        cost,
        expected_revenue
-from {{ref('event_detail')}};
+from {{ref('event_detail')}}
