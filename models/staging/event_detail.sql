@@ -29,6 +29,6 @@ select distinct c.Id as id,
        cm.Attendee_Type__c as attendance_type,
       --  cm.Service__c, --> has a null
       -- wishlist: last worship date, online worship count, in person worship count, primary worship service, has worshipped flag, engagement score
-from "analytics-473100.raw_attendance.Campaign" c
-inner join "analytics-473100.raw_attendance.CampaignMember" cm
+from {{ source('raw_attendance', 'Campaign') }} c --"analytics-473100.raw_attendance.Campaign" c
+inner join {{ source('raw_attendance', 'CampaignMember') }} cm --"analytics-473100.raw_attendance.CampaignMember" cm
         on c.Id = cm.CampaignId;
