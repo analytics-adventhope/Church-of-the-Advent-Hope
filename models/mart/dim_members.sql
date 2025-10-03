@@ -1,0 +1,18 @@
+select generate_uuid() as member_sk,
+       contact_id,
+       first_name,
+       last_name,
+       salutation,
+       phone,
+       mobile_phone,
+       email,
+       fax,
+       country,
+       state_,
+       city,
+       street,
+       postal_code,
+       company,
+       participant_type,
+       opted_out_of_email
+from {{ref('event_detail')}};
