@@ -3,7 +3,7 @@ with days as (
     from unnest(generate_array(0, 18250)) as x  -- ~50 years
 ),
 max_date as (
-    select max(end_date) as max_end_date
+    select max(event_date) as max_end_date
     from {{ ref('event_detail') }}
 )
 select format_date('%Y%m%d', d.date) as date_sk,
