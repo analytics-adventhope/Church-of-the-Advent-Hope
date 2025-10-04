@@ -1,13 +1,8 @@
 {{ config(materialized = 'table') }}
 
-select distinct m.contact_id,
-       e.event_id,
-       d.date_sk,
+select distinct e.event_id,
        e.event_date,
-       e.event_time,
-       e.type,
-       e.event_format,
-       m.participant_type
+       m.contact_id
 from {{ ref('event_detail') }} ed
 inner join {{ ref('dim_members') }} m
         on ed.contact_id = m.contact_id
