@@ -4,7 +4,7 @@ with days as (
 ),
 max_date as (
     select max(end_date) as max_end_date
-    from {{ ref('fact_attendance') }}
+    from {{ ref('event_detail') }}
 )
 select format_date('%Y%m%d', d.date) as date_sk,
        d.date,
