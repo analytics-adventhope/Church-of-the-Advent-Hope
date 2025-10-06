@@ -3,10 +3,9 @@ with days as (
     from unnest(generate_array(0, 18250)) as x  -- ~50 years
 ),
 max_date as (
-    select max(event_date) as max_end_date
-    from {{ ref('event_detail') }}
+    select current_date('EST') as max_end_date
 )
-select distinct d.date,
+select distinct date(d.date) as date,
        extract(dayofweek from d.date) as day_of_week,
        extract(week from d.date) as week,
        extract(month from d.date) as month,
@@ -20,3 +19,5 @@ select distinct d.date,
        end as time_bucket
 from days d
 cross join max_date m
+where d.date <= m.max_end_date
+order by 1 desc
