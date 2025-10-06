@@ -1,5 +1,4 @@
-select distinct generate_uuid() as member_sk,
-       contact_id,
+select distinct contact_id,
        first_name,
        last_name,
        salutation,
