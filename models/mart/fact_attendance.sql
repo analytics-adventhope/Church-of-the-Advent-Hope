@@ -2,6 +2,7 @@
 
 select distinct e.event_id,
        e.event_date,
+       e.time_bucket,
        e.event_time,
        e.type,
        e.event_format,
