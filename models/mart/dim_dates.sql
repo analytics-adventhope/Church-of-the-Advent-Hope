@@ -11,10 +11,10 @@ select distinct date(d.date) as date,
        extract(month from d.date) as month,
        extract(quarter from d.date) as quarter,
        extract(year from d.date) as year,
-       case when date_diff(m.max_end_date, d.date, month) <= 3 then '3-month'
-            when date_diff(m.max_end_date, d.date, month) <= 6 then '6-month'
-            when date_diff(m.max_end_date, d.date, month) <= 12 then '12-month'
-            when date_diff(m.max_end_date, d.date, month) <= 24 then '24-month'
+       case when date_diff(m.max_end_date, d.date, month) <= 3 then '0. 3-month'
+            when date_diff(m.max_end_date, d.date, month) <= 6 then '1. 6-month'
+            when date_diff(m.max_end_date, d.date, month) <= 12 then '2. 12-month'
+            when date_diff(m.max_end_date, d.date, month) <= 24 then '3. 24-month'
             else 'all time'
        end as time_bucket
 from days d
