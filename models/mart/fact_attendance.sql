@@ -2,7 +2,11 @@
 
 select distinct e.event_id,
        e.event_date,
-       m.contact_id
+       e.event_time,
+       e.type,
+       e.event_format,
+       m.contact_id,
+       m.participant_type
 from {{ ref('event_detail') }} ed
 inner join {{ ref('dim_members') }} m
         on ed.contact_id = m.contact_id
