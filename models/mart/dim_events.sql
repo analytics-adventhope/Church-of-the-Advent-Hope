@@ -1,5 +1,4 @@
-select distinct generate_uuid() as event_sk,
-       event_id,
+select distinct event_id,
        event_name,
        description,
        type,
