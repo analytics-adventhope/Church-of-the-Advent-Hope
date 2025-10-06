@@ -6,8 +6,7 @@ max_date as (
     select max(event_date) as max_end_date
     from {{ ref('event_detail') }}
 )
-select format_date('%Y%m%d', d.date) as date_sk,
-       d.date,
+select d.date,
        extract(dayofweek from d.date) as day_of_week,
        extract(week from d.date) as week,
        extract(month from d.date) as month,
