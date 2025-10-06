@@ -10,8 +10,8 @@ select distinct e.event_id,
        m.first_name,
        m.last_name,
        m.participant_type,
-       count(distinct e.event_id) over(partition by m.contact_id, d.time_bucket) as events_attended,
-       count(distinct e.event_id) over(partition by d.time_bucket) as events_sum
+       count(distinct e.event_date) over(partition by m.contact_id, d.time_bucket) as events_attended,
+       count(distinct e.event_date) over(partition by d.time_bucket) as events_sum
 from {{ ref('event_detail') }} ed
 inner join {{ ref('dim_members') }} m
         on ed.contact_id = m.contact_id
