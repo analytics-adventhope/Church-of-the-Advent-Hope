@@ -11,10 +11,10 @@ select distinct date(d.date) as date,
        extract(month from d.date) as month,
        extract(quarter from d.date) as quarter,
        extract(year from d.date) as year,
-       case when date_diff(m.max_end_date, d.date, month) <= 3  then 'Months 0 - 3'
-            when date_diff(m.max_end_date, d.date, month) <= 6. then 'Months 4- 6'
-            when date_diff(m.max_end_date, d.date, month) <= 12 then 'Months 7 - 12'
-            when date_diff(m.max_end_date, d.date, month) <= 24 then 'Months 13 - 24'
+       case when date_diff(m.max_end_date, d.date, month) / 30 <= 3  then 'Months 0 - 3'
+            when date_diff(m.max_end_date, d.date, month) / 30 <= 6  then 'Months 4- 6'
+            when date_diff(m.max_end_date, d.date, month) / 30 <= 12 then 'Months 7 - 12'
+            when date_diff(m.max_end_date, d.date, month) / 30 <= 24 then 'Months 13 - 24'
             else 'Months 25+'
        end as time_bucket
 from days d
