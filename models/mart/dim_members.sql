@@ -42,6 +42,8 @@ stats_summary as (
 
 risk as (
   select r.contact_id,
+         baseline_rate,
+         recent_rate,
          case when baseline_rate >= 0.69 and recent_rate <= 0.3 then 'High'
               when baseline_rate >= 0.69 and recent_rate > 0.3 and recent_rate <= 0.6 then 'Medium'
               when baseline_rate >= 0.69 and recent_rate > 0.6 then 'Low'
