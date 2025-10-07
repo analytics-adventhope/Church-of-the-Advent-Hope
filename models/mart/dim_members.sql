@@ -22,6 +22,7 @@ member_attendance as (
                as baseline_attendance,
     from {{ref('event_detail')}}
     where type = 'Worship Service'
+      and participant_type in ('Homer', 'Elder', 'Ecclesia', 'Deacon', 'On the Books')
     group by 1
 ),
 
@@ -41,33 +42,33 @@ stats_summary as (
 
 risk as (
   select r.contact_id,
-         case when baseline_rate >= 0.7 and recent_rate <= 0.3 then 'High'
-              when baseline_rate >= 0.7 and recent_rate > 0.3 and recent_rate <= 0.6 then 'Medium'
-              when baseline_rate >= 0.7 and recent_rate > 0.6 then 'Low'
+         case when baseline_rate >= 0.69 and recent_rate <= 0.3 then 'High'
+              when baseline_rate >= 0.69 and recent_rate > 0.3 and recent_rate <= 0.6 then 'Medium'
+              when baseline_rate >= 0.69 and recent_rate > 0.6 then 'Low'
               ELSE 'Not Applicable'
          end as rule_based_flag,
-         case when (r.recent_rate - s.mean_recent) / nullif(s.sd_recent, 0) <= -1.5 then 'High'
-              when (r.recent_rate - s.mean_recent) / nullif(s.sd_recent, 0) > -1.5 
+         case when (r.recent_rate - s.mean_recent) / nullif(s.sd_recent, 0) <= -1.0 then 'High'
+              when (r.recent_rate - s.mean_recent) / nullif(s.sd_recent, 0) > -1.0 
                    and (r.recent_rate - s.mean_recent) / nullif(s.sd_recent, 0) <= -0.5 then 'Medium'
               when (r.recent_rate - s.mean_recent) / nullif(s.sd_recent, 0) > -0.5 then 'Low'
               else 'Not Applicable'
          end as statistical_flag
   from risk_profiling r
   cross join stats_summary s
+  where baseline_rate > 0
 ),
 
 hybrid_risk as (
   select rb.contact_id,
-       --   rb.baseline_rate,
-       --   rb.recent_rate,
+         rb.baseline_rate,
+         rb.recent_rate,
        --   rb.drop_ratio,
          rb.rule_based_flag,
-       --   sr.z_score,
          rb.statistical_flag,
          case when rb.rule_based_flag = 'High'   or rb.statistical_flag = 'High'   then 'High'
               when rb.rule_based_flag = 'Medium' or rb.statistical_flag = 'Medium' then 'Medium'
               when rb.rule_based_flag = 'Low'    and rb.statistical_flag = 'Low'   then 'Low'
-              else 'Not Applicable'
+              else "Not Applicable"
          end as hybrid_flag
   from risk rb
 ),
@@ -97,9 +98,11 @@ select distinct ed.contact_id,
        participant_type,
        opted_out_of_email,
        lw.latest_worship_date,
-       hr.rule_based_flag,
-       hr.statistical_flag,
-       hr.hybrid_flag
+       hr.baseline_rate,
+       hr.recent_rate,
+       case when hr.contact_id is not null then hr.rule_based_flag else "Not Applicable" end as rule_based_flag,
+       case when hr.contact_id is not null then hr.statistical_flag else "Not Applicable" end as statistical_flag,
+       case when hr.contact_id is not null then hr.hybrid_flag else "Not Applicable" end as hybrid_flag
 from {{ref('event_detail')}} ed
 left join latest_worship lw
        on ed.contact_id = lw.contact_id
