@@ -30,6 +30,7 @@ risk_profiling as (
   select contact_id,
          safe_divide(recent_attendance, recent_worship) as recent_rate,
          safe_divide(baseline_attendance, baseline_worship) as baseline_rate
+         safe_divide(baseline_attendance - recent_attendance, baseline_attendance) as drop_ratio
   from member_attendance
   cross join worship_events
 ),
@@ -44,10 +45,19 @@ risk as (
   select r.contact_id,
          baseline_rate,
          recent_rate,
-         case when baseline_rate >= 0.69 and recent_rate <= 0.3 then 'High'
-              when baseline_rate >= 0.69 and recent_rate > 0.3 and recent_rate <= 0.6 then 'Medium'
-              when baseline_rate >= 0.69 and recent_rate > 0.6 then 'Low'
-              ELSE 'Not Applicable'
+         -- case when baseline_rate >= 0.69 and recent_rate <= 0.3 then 'High'
+         --      when baseline_rate >= 0.69 and recent_rate > 0.3 and recent_rate <= 0.6 then 'Medium'
+         --      when baseline_rate >= 0.69 and recent_rate > 0.6 then 'Low'
+         --      else 'Not Applicable'
+         -- end as rule_based_flag,
+         case
+              -- Highly engaged before, now nearly gone
+              when baseline_rate >= 0.7 and drop_ratio >= 0.5 then 'High'
+              -- Moderately engaged, now dropped a lot
+              when baseline_rate between 0.4 and 0.7 and drop_ratio >= 0.6 then 'Medium'
+              -- Previously low engagement, but not much change
+              when baseline_rate < 0.4 and drop_ratio < 0.2 then 'Low'
+              else 'Not Applicable'
          end as rule_based_flag,
          case when (r.recent_rate - s.mean_recent) / nullif(s.sd_recent, 0) <= -1.0 then 'High'
               when (r.recent_rate - s.mean_recent) / nullif(s.sd_recent, 0) > -1.0 
