@@ -68,7 +68,7 @@ risk as (
   from risk_profiling r
   cross join stats_summary s
   where baseline_rate > 0
-    and not (baseline_rate < 20 and recent_rate < 20)
+    and not (baseline_rate < 0.20 and recent_rate < 0.20)
 ),
 
 hybrid_risk as (
