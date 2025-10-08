@@ -29,7 +29,7 @@ member_attendance as (
 risk_profiling as (
   select contact_id,
          safe_divide(recent_attendance, recent_worship) as recent_rate,
-         safe_divide(baseline_attendance, baseline_worship) as baseline_rate
+         safe_divide(baseline_attendance, baseline_worship) as baseline_rate,
          safe_divide(baseline_attendance - recent_attendance, baseline_attendance) as drop_ratio
   from member_attendance
   cross join worship_events
