@@ -1,2 +1,2 @@
 # Church-of-the-Advent-Hope
-Repository hosting the code pertaining to all of Advent Hope’s analytics needs.
+Repository hosting the code pertaining to Advent Hope’s operational needs.
