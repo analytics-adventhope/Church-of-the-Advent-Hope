@@ -121,7 +121,7 @@ select distinct ed.contact_id,
        case when hr.contact_id is not null then hr.statistical_flag else "Not Applicable" end as statistical_flag,
        case when hr.contact_id is not null then hr.hybrid_flag else "Not Applicable" end as hybrid_flag,
        lw.in_person_prop,
-       lw.first_service_prop
+       lw.second_service_prop
 from {{ref('event_detail')}} ed
 left join latest_worship lw
        on ed.contact_id = lw.contact_id
