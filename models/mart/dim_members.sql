@@ -22,7 +22,7 @@ member_attendance as (
                as baseline_attendance,
     from {{ref('event_detail')}}
     where type = 'Worship Service'
-      and participant_type in ('Homer', 'Elder', 'Ecclesia', 'Deacon', 'On the Books')
+      and participant_type in ('Homer', 'Elder', 'Ecclesia', 'Deacon')
     group by 1
 ),
 
@@ -88,7 +88,11 @@ hybrid_risk as (
 
 latest_worship as (
   select contact_id,
-         max(event_date) as latest_worship_date
+         max(event_date) as latest_worship_date,
+         count distinct (case when type = 'Worship Service' and attendance_type = 'In-Person' then event_date end) 
+               / count distinct (case when type = 'Worship Service' then event_date end) as in_person_prop,
+         count distinct (case when type = 'Worship Service' and attendance_type = '9:00 AM' then event_date end) 
+               / count distinct (case when type = 'Worship Service' then event_date end) as first_service_prop,
   from {{ref('event_detail')}}
   where type = 'Worship Service'
   group by 1
@@ -115,7 +119,9 @@ select distinct ed.contact_id,
        hr.recent_rate,
        case when hr.contact_id is not null then hr.rule_based_flag else "Not Applicable" end as rule_based_flag,
        case when hr.contact_id is not null then hr.statistical_flag else "Not Applicable" end as statistical_flag,
-       case when hr.contact_id is not null then hr.hybrid_flag else "Not Applicable" end as hybrid_flag
+       case when hr.contact_id is not null then hr.hybrid_flag else "Not Applicable" end as hybrid_flag,
+       lw.in_person_prop,
+       lw.first_service_prop
 from {{ref('event_detail')}} ed
 left join latest_worship lw
        on ed.contact_id = lw.contact_id
