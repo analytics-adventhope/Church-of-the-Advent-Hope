@@ -89,10 +89,10 @@ hybrid_risk as (
 latest_worship as (
   select contact_id,
          max(event_date) as latest_worship_date,
-         count (distinct case when type = 'Worship Service' and attendance_type = 'In-Person' then event_date end) 
-               / count (distinct case when type = 'Worship Service' then event_date end) as in_person_prop,
-         count (distinct case when type = 'Worship Service' and event_time = '11:30 AM' then event_date end) 
-               / count (distinct case when type = 'Worship Service' then event_date end) as second_service_prop,
+         count(distinct case when type = 'Worship Service' and attendance_type = 'In-Person' then event_date end) 
+               / count(distinct case when type = 'Worship Service' then event_date end) as in_person_prop,
+         count(distinct case when type = 'Worship Service' and event_time = '11:30 AM' then event_date end) 
+               / count(distinct case when type = 'Worship Service' then event_date end) as second_service_prop,
   from {{ref('event_detail')}}
   where type = 'Worship Service'
   group by 1
