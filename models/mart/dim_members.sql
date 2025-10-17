@@ -78,9 +78,15 @@ hybrid_risk as (
        --   rb.drop_ratio,
          rb.rule_based_flag,
          rb.statistical_flag,
-         case when rb.rule_based_flag = 'High'   or rb.statistical_flag = 'High'   then 'High'
-              when rb.rule_based_flag = 'Medium' or rb.statistical_flag = 'Medium' then 'Medium'
-              when rb.rule_based_flag = 'Low'    and rb.statistical_flag = 'Low'   then 'Low'
+         case when rb.rule_based_flag = 'High'   and rb.statistical_flag = 'High'    then 'High'
+              when rb.rule_based_flag = 'High'   and rb.statistical_flag = 'Medium'  then 'Medium'
+              when rb.rule_based_flag = 'Medium' and rb.statistical_flag = 'High'    then 'Medium'
+              when rb.rule_based_flag = 'High'   and rb.statistical_flag = 'Low'     then 'Medium'
+              when rb.rule_based_flag = 'Low'    and rb.statistical_flag = 'High'    then 'Medium'
+              when rb.rule_based_flag = 'Medium' and rb.statistical_flag = 'Medium'  then 'Medium'
+              when rb.rule_based_flag = 'Low'    and rb.statistical_flag = 'Medium'  then 'Medium'
+              when rb.rule_based_flag = 'Medium' and rb.statistical_flag = 'Low'     then 'Medium'
+              when rb.rule_based_flag = 'Low'    and rb.statistical_flag = 'Low'     then 'Low'
               else "Not Applicable"
          end as hybrid_flag
   from risk rb
