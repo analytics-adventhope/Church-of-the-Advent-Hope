@@ -28,7 +28,7 @@ select distinct c.Id as event_id,
        cm.Attendance_Indicator__c as attendance_indicator,
        case when cm.Attendee_Type__c is null then 'Online' else cm.Attendee_Type__c end as attendance_type,
       --  cm.Service__c, --> has a null
-      -- wishlist: last worship date, online worship count, in person worship count, primary worship service, has worshipped flag, engagement score
+      -- wishlist: engagement score
 from {{ source('raw_attendance', 'Campaign') }} c --"analytics-473100.raw_attendance.Campaign" c
 inner join {{ source('raw_attendance', 'CampaignMember') }} cm --"analytics-473100.raw_attendance.CampaignMember" cm
         on c.Id = cm.CampaignId
