@@ -26,7 +26,7 @@ select distinct c.Id as event_id,
        cm.HasOptedOutOfEmail as opted_out_of_email,
        cm.Status as status,
        cm.Attendance_Indicator__c as attendance_indicator,
-       cm.Attendee_Type__c as attendance_type,
+       case when cm.Attendee_Type__c is null then 'Online' else cm.Attendee_Type__c end as attendance_type,
       --  cm.Service__c, --> has a null
       -- wishlist: last worship date, online worship count, in person worship count, primary worship service, has worshipped flag, engagement score
 from {{ source('raw_attendance', 'Campaign') }} c --"analytics-473100.raw_attendance.Campaign" c
