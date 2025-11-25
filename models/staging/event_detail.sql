@@ -29,7 +29,7 @@ select distinct c.Id as event_id,
        case when Status in ('Attended', 'Attendeed') then 'In-Person'
             when Status = 'Attended Online' then 'Online'
             else Status
-       end as attendance_type,
+       end as attendance_type
        -- case when cm.Attendee_Type__c is null then 'Online' else cm.Attendee_Type__c end as attendance_type,
       --  cm.Service__c, --> has a null
       -- wishlist: engagement score
