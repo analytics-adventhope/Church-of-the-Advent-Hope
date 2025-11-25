@@ -26,9 +26,8 @@ select distinct c.Id as event_id,
        cm.HasOptedOutOfEmail as opted_out_of_email,
        cm.Status as status,
        cm.Attendance_Indicator__c as attendance_indicator,
-       case when cm.Attendance_Indicator__c in ('Attended', 'Attendeed') then 'In-Person'
-            when cm.Attendance_Indicator__c = 'Attended Online' then 'Online'
-            else cm.Attendance_Indicator__c
+       case when cm.Attendance_Indicator__c = true then 'In-Person'
+            when cm.Attendance_Indicator__c = false then 'Online'
        end as attendance_type,
        -- case when cm.Status in ('Attended', 'Attendeed') then 'In-Person'
        --      when cm.Status = 'Attended Online' then 'Online'
