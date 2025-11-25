@@ -26,10 +26,14 @@ select distinct c.Id as event_id,
        cm.HasOptedOutOfEmail as opted_out_of_email,
        cm.Status as status,
        cm.Attendance_Indicator__c as attendance_indicator,
-       case when cm.Status in ('Attended', 'Attendeed') then 'In-Person'
-            when cm.Status = 'Attended Online' then 'Online'
-            else cm.Status
-       end as attendance_type
+       case when cm.Attendance_Indicator__c in ('Attended', 'Attendeed') then 'In-Person'
+            when cm.Attendance_Indicator__c = 'Attended Online' then 'Online'
+            else cm.Attendance_Indicator__c
+       end as attendance_type,
+       -- case when cm.Status in ('Attended', 'Attendeed') then 'In-Person'
+       --      when cm.Status = 'Attended Online' then 'Online'
+       --      else cm.Status
+       -- end as attendance_type,
        -- case when cm.Attendee_Type__c is null then 'Online' else cm.Attendee_Type__c end as attendance_type,
       --  cm.Service__c, --> has a null
       -- wishlist: engagement score
