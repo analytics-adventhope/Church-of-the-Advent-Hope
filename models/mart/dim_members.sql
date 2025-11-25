@@ -104,7 +104,7 @@ latest_worship as (
   group by 1
 )
 
-select distinct any_value(ed.contact_id) as contact_id,
+select ed.contact_id,
        any_value(first_name) as first_name,
        any_value(last_name) as last_name,
        any_value(salutation) as salutation,
@@ -133,3 +133,4 @@ left join latest_worship lw
        on ed.contact_id = lw.contact_id
 left join hybrid_risk hr
        on ed.contact_id = hr.contact_id
+group by all
