@@ -30,7 +30,7 @@ select distinct c.Id as event_id,
        --      when cm.Attendance_Indicator__c = false then 'Online'
        -- end as attendance_type,
        case when cm.Status in ('Attended', 'Attendeed') then 'In-Person'
-            when cm.Status = 'Attended Online' then 'Online'
+            when cm.Status in ('Attended Online', 'Attended (Online)', 'Attended  (Online)') then 'Online'
             else cm.Status
        end as attendance_type,
        -- case when cm.Attendee_Type__c is null then 'Online' else cm.Attendee_Type__c end as attendance_type,
