@@ -1,0 +1,61 @@
+version: 2
+
+sources:
+  - name: eventbrite_raw          # source name used in dbt ref: {{ source('eventbrite_raw', 'event') }}
+    database: analytics-473100    # BigQuery project ID
+    schema: eventbrite_raw        # BigQuery dataset
+    tables:
+      - name: event
+      - name: attendee
+      - name: orders
+      - name: attendee_answer
+      - name: attendee_barcode
+      - name: venue
+      - name: ticket_class
+      - name: ticket_buyer
+      - name: pricing
+      - name: event_capacity
+      - name: organization
+      - name: users
+
+models:
+  - name: stg_eventbrite_events
+    description: "Cleans and standardizes raw Eventbrite event data. Classifies event types to align with Salesforce Campaign.Type values."
+    columns:
+      - name: eventbrite_event_id
+        description: "Unique event identifier, cast to STRING for Salesforce compatibility"
+        tests:
+          - unique
+          - not_null
+      - name: event_name
+        tests:
+          - not_null
+      - name: event_date
+        tests:
+          - not_null
+
+  - name: stg_eventbrite_attendees
+    description: "Cleans and standardizes raw Eventbrite attendee data. Normalizes email and phone for identity resolution against Salesforce contacts."
+    columns:
+      - name: eventbrite_attendee_id
+        description: "Unique attendee identifier, cast to STRING for Salesforce compatibility"
+        tests:
+          - unique
+          - not_null
+      - name: email
+        description: "Normalized email (lowered, trimmed) used as primary key for identity resolution"
+        tests:
+          - not_null
+
+  - name: stg_eventbrite_orders
+    description: "Cleans and standardizes raw Eventbrite order data. One order can contain multiple attendees."
+    columns:
+      - name: eventbrite_order_id
+        description: "Unique order identifier, cast to STRING for consistency"
+        tests:
+          - unique
+          - not_null
+      - name: email
+        description: "Order owner email, may differ from attendee email if buyer purchased for others"
+        tests:
+          - not_null
