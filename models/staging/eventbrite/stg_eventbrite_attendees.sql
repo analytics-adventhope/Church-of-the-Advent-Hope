@@ -7,7 +7,7 @@ WITH source AS (
     -- filter out soft-deleted, cancelled, and refunded registrations
     -- only keep attendees with valid, active registrations
     SELECT *
-    FROM `analytics-473100.eventbrite_raw.attendee`
+    FROM {{ source('eventbrite_raw', 'attendee') }}
     WHERE _fivetran_deleted = FALSE
         AND cancelled = FALSE
         AND refunded = FALSE

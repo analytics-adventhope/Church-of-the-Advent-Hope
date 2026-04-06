@@ -45,11 +45,6 @@ risk as (
   select r.contact_id,
          baseline_rate,
          recent_rate,
-         -- case when baseline_rate >= 0.69 and recent_rate <= 0.3 then 'High'
-         --      when baseline_rate >= 0.69 and recent_rate > 0.3 and recent_rate <= 0.6 then 'Medium'
-         --      when baseline_rate >= 0.69 and recent_rate > 0.6 then 'Low'
-         --      else 'Not Applicable'
-         -- end as rule_based_flag,
          case
               -- Highly engaged before, now nearly gone
               when baseline_rate >= 0.7 and drop_ratio >= 0.5 then 'High'
@@ -60,7 +55,7 @@ risk as (
               else 'Not Applicable'
          end as rule_based_flag,
          case when (r.recent_rate - s.mean_recent) / nullif(s.sd_recent, 0) <= -1.0 then 'High'
-              when (r.recent_rate - s.mean_recent) / nullif(s.sd_recent, 0) > -1.0 
+              when (r.recent_rate - s.mean_recent) / nullif(s.sd_recent, 0) > -1.0
                    and (r.recent_rate - s.mean_recent) / nullif(s.sd_recent, 0) <= -0.5 then 'Medium'
               when (r.recent_rate - s.mean_recent) / nullif(s.sd_recent, 0) > -0.5 then 'Low'
               else 'Not Applicable'
@@ -75,7 +70,6 @@ hybrid_risk as (
   select rb.contact_id,
          rb.baseline_rate,
          rb.recent_rate,
-       --   rb.drop_ratio,
          rb.rule_based_flag,
          rb.statistical_flag,
          case when rb.rule_based_flag = 'High'   and rb.statistical_flag = 'High'    then 'High'
@@ -95,42 +89,101 @@ hybrid_risk as (
 latest_worship as (
   select contact_id,
          max(event_date) as latest_worship_date,
-         count(distinct case when type = 'Worship Service' and attendance_type = 'In-Person' then event_date end) 
+         count(distinct case when type = 'Worship Service' and attendance_type = 'In-Person' then event_date end)
                / count(distinct case when type = 'Worship Service' then event_date end) as in_person_prop,
-         count(distinct case when type = 'Worship Service' and event_time = '11:30 AM' then event_date end) 
+         count(distinct case when type = 'Worship Service' and event_time = '11:30 AM' then event_date end)
                / count(distinct case when type = 'Worship Service' then event_date end) as second_service_prop,
   from {{ref('event_detail')}}
   where type = 'Worship Service'
   group by 1
+),
+
+-- Salesforce contacts (existing logic unchanged)
+sf_members as (
+  select ed.contact_id,
+         any_value(first_name) as first_name,
+         any_value(last_name) as last_name,
+         any_value(salutation) as salutation,
+         any_value(phone) as phone,
+         any_value(mobile_phone) as mobile_phone,
+         any_value(email) as email,
+         any_value(fax) as fax,
+         any_value(country) as country,
+         any_value(state_) as state_,
+         any_value(city) as city,
+         any_value(street) as street,
+         any_value(postal_code) as postal_code,
+         any_value(company) as company,
+         array_agg(participant_type order by event_date desc limit 1)[offset(0)] as participant_type,
+         any_value(opted_out_of_email) as opted_out_of_email,
+         any_value(lw.latest_worship_date) as latest_worship_date,
+         any_value(hr.baseline_rate) as baseline_rate,
+         any_value(hr.recent_rate) as recent_rate,
+         any_value(case when hr.contact_id is not null then hr.rule_based_flag else "Not Applicable" end) as rule_based_flag,
+         any_value(case when hr.contact_id is not null then hr.statistical_flag else "Not Applicable" end) as statistical_flag,
+         any_value(case when hr.contact_id is not null then hr.hybrid_flag else "Not Applicable" end) as hybrid_flag,
+         any_value(lw.in_person_prop) as in_person_prop,
+         any_value(lw.second_service_prop) as second_service_prop
+  from {{ref('event_detail')}} ed
+  left join latest_worship lw
+         on ed.contact_id = lw.contact_id
+  left join hybrid_risk hr
+         on ed.contact_id = hr.contact_id
+  group by all
+),
+
+-- Eventbrite-only contacts: attended EB events but have no matching Salesforce record
+-- Deduped by normalized email; stable contact_id derived from email hash
+
+-- Step 1: normalize email so we can safely GROUP BY it
+eb_normalized as (
+  select
+      lower(trim(email)) as email_key,
+      first_name,
+      last_name,
+      phone_raw
+  from {{ref('stg_eventbrite_attendees')}}
+  where email is not null
+    and trim(email) not in ('info requested', '', 'n/a', 'none')
+    and email like '%@%'
+),
+
+eb_only_contacts as (
+  select
+      concat('eb_', to_hex(md5(n.email_key)))          as contact_id,
+      any_value(n.first_name)                           as first_name,
+      any_value(n.last_name)                            as last_name,
+      cast(null as string)                              as salutation,
+      any_value(n.phone_raw)                            as phone,
+      cast(null as string)                              as mobile_phone,
+      n.email_key                                       as email,
+      cast(null as string)                              as fax,
+      cast(null as string)                              as country,
+      cast(null as string)                              as state_,
+      cast(null as string)                              as city,
+      cast(null as string)                              as street,
+      cast(null as string)                              as postal_code,
+      cast(null as string)                              as company,
+      cast(null as string)                              as participant_type,
+      cast(null as bool)                                as opted_out_of_email,
+      cast(null as date)                                as latest_worship_date,
+      cast(null as float64)                             as baseline_rate,
+      cast(null as float64)                             as recent_rate,
+      'Not Applicable'                                  as rule_based_flag,
+      'Not Applicable'                                  as statistical_flag,
+      'Not Applicable'                                  as hybrid_flag,
+      cast(null as float64)                             as in_person_prop,
+      cast(null as float64)                             as second_service_prop
+  from eb_normalized n
+  left join (
+      select distinct lower(trim(email)) as email
+      from {{ref('event_detail')}}
+      where email is not null
+  ) sf on n.email_key = sf.email
+  where sf.email is null          -- not already in Salesforce
+  group by n.email_key
 )
 
-select ed.contact_id,
-       any_value(first_name) as first_name,
-       any_value(last_name) as last_name,
-       any_value(salutation) as salutation,
-       any_value(phone) as phone,
-       any_value(mobile_phone) as mobile_phone,
-       any_value(email) as email,
-       any_value(fax) as fax,
-       any_value(country) as country,
-       any_value(state_) as state_,
-       any_value(city) as city,
-       any_value(street) as street,
-       any_value(postal_code) as postal_code,
-       any_value(company) as company,
-       array_agg(participant_type order by event_date desc limit 1)[offset(0)] as participant_type,
-       any_value(opted_out_of_email) as opted_out_of_email,
-       any_value(lw.latest_worship_date) as latest_worship_date,
-       any_value(hr.baseline_rate) as baseline_rate,
-       any_value(hr.recent_rate) as recent_rate,
-       any_value(case when hr.contact_id is not null then hr.rule_based_flag else "Not Applicable" end) as rule_based_flag,
-       any_value(case when hr.contact_id is not null then hr.statistical_flag else "Not Applicable" end) as statistical_flag,
-       any_value(case when hr.contact_id is not null then hr.hybrid_flag else "Not Applicable" end) as hybrid_flag,
-       any_value(lw.in_person_prop) as in_person_prop,
-       any_value(lw.second_service_prop) as second_service_prop
-from {{ref('event_detail')}} ed
-left join latest_worship lw
-       on ed.contact_id = lw.contact_id
-left join hybrid_risk hr
-       on ed.contact_id = hr.contact_id
-group by all
+select * from sf_members
+union all
+select * from eb_only_contacts

@@ -6,7 +6,7 @@
 WITH source AS (
     -- filter out soft-deleted records from Fivetran
     SELECT *
-    FROM `analytics-473100.eventbrite_raw.event`
+    FROM {{ source('eventbrite_raw', 'event') }}
     WHERE _fivetran_deleted = FALSE
 )
 
@@ -16,7 +16,7 @@ SELECT
     description_text AS description,
     'Eventbrite' AS event_source,
     CASE -- classify event type based on name to align with Salesforce Campaign type values
-        WHEN LOWER(name_text) LIKE '%worship%' THEN 'Worship Service' 
+        WHEN LOWER(name_text) LIKE '%worship%' THEN 'Worship Service'
         WHEN LOWER(name_text) LIKE '%prayer%' THEN 'Prayer'
         WHEN LOWER(name_text) LIKE '%bible%' OR LOWER(name_text) LIKE '%study%' THEN 'Bible Study'
         ELSE 'Event'
@@ -36,4 +36,3 @@ SELECT
     _fivetran_synced AS synced_at
 FROM source
 WHERE status != 'draft' -- exclude unpublished events
-ORDER BY event_date DESC
