@@ -6,7 +6,7 @@
 WITH source AS (
     -- filter out soft-deleted records from Fivetran
     SELECT *
-    FROM `analytics-473100.eventbrite_raw.orders`
+    FROM {{ source('eventbrite_raw', 'orders') }}
     WHERE _fivetran_deleted = FALSE
 )
 
@@ -22,4 +22,3 @@ SELECT
     created AS ordered_at,
     _fivetran_synced AS synced_at
 FROM source
-ORDER BY ordered_at DESC
